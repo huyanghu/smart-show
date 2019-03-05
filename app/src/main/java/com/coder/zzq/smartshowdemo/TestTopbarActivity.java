@@ -14,14 +14,15 @@ public class TestTopbarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_topbar);
+        SmartTopbar.get(this).show("你好");
     }
 
     public void onShortClick(View view) {
-        SmartTopbar.get(this).show("苹果");
+        SmartTopbar.get(this).show("来晚了一步，老弟", R.drawable.type_info_warning);
     }
 
     public void onLongClick(View view) {
-        SmartTopbar.get(this).showLong("香蕉");
+        SmartTopbar.get(this).showLong("香蕉", R.drawable.type_info_error);
     }
 
     public void onIndefinite(View view) {

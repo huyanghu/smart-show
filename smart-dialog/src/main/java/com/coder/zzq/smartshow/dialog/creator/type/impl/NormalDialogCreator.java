@@ -2,6 +2,7 @@ package com.coder.zzq.smartshow.dialog.creator.type.impl;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatDialog;
@@ -19,6 +20,10 @@ abstract class NormalDialogCreator<B> extends DialogCreator implements INormalDi
     protected boolean mCancelable;
     @DrawableRes
     protected int mWindowBackground;
+
+    protected DialogInterface.OnShowListener mOnShowListener;
+    protected DialogInterface.OnDismissListener mOnDismissListener;
+    protected DialogInterface.OnCancelListener mOnCancelListener;
 
     public NormalDialogCreator() {
         mWindowBackground = R.drawable.smart_show_round_dialog_bg;
@@ -41,13 +46,34 @@ abstract class NormalDialogCreator<B> extends DialogCreator implements INormalDi
 
     @Override
     public B cancelable(boolean b) {
-        mCancelable = true;
+        mCancelable = b;
+        if (!b) {
+            mCancelableOnTouchOutside = false;
+        }
         return (B) this;
     }
 
     @Override
     public B cancelableOnTouchOutside(boolean b) {
         mCancelableOnTouchOutside = b;
+        return (B) this;
+    }
+
+    @Override
+    public B cancelListener(DialogInterface.OnCancelListener cancelListener) {
+        mOnCancelListener = cancelListener;
+        return (B) this;
+    }
+
+    @Override
+    public B showListener(DialogInterface.OnShowListener showListener) {
+        mOnShowListener = showListener;
+        return (B) this;
+    }
+
+    @Override
+    public B dismissListener(DialogInterface.OnDismissListener dismissListener) {
+        mOnDismissListener = dismissListener;
         return (B) this;
     }
 
@@ -59,9 +85,24 @@ abstract class NormalDialogCreator<B> extends DialogCreator implements INormalDi
         } else {
             dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         }
-        dialog.getWindow().setBackgroundDrawableResource(mWindowBackground);
+        if (mWindowBackground != 0) {
+            dialog.getWindow().setBackgroundDrawableResource(mWindowBackground);
+        }
+
+        dialog.setCanceledOnTouchOutside(mCancelable ? mCancelableOnTouchOutside : false);
         dialog.setCancelable(mCancelable);
-        dialog.setCanceledOnTouchOutside(mCancelableOnTouchOutside);
+        if (mOnShowListener != null) {
+            dialog.setOnShowListener(mOnShowListener);
+        }
+
+        if (mOnDismissListener != null) {
+            dialog.setOnDismissListener(mOnDismissListener);
+        }
+
+        if (mOnCancelListener != null) {
+            dialog.setOnCancelListener(mOnCancelListener);
+        }
+
         View dialogRootView = Utils.inflate(provideDialogRootView(), null);
         initView(dialog, dialogRootView);
         ViewGroup.MarginLayoutParams rootLp = new ViewGroup.MarginLayoutParams(provideDialogWidth(), ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -78,7 +119,7 @@ abstract class NormalDialogCreator<B> extends DialogCreator implements INormalDi
     }
 
     protected int provideDialogWidth() {
-        return Utils.screenWidth() - Utils.dpToPx(70);
+        return Math.min(Utils.screenWidth() - Utils.dpToPx(70), Utils.dpToPx(290));
     }
 
     @LayoutRes

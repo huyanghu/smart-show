@@ -12,7 +12,12 @@ import com.coder.zzq.smartshow.dialog.R;
 import com.coder.zzq.smartshow.dialog.creator.type.ILoadingDialogCreator;
 
 class LoadingDialogCreator extends NormalDialogCreator<ILoadingDialogCreator> implements ILoadingDialogCreator {
-    private CharSequence mMsg = "加载中...";
+    private CharSequence mMsg = "加载中";
+    public static final int BOX_SIZE_LARGE = 0;
+    public static final int BOX_SIZE_MIDDLE = 1;
+    public static final int BOX_SIZE_SMALL = 2;
+    private int mBoxSize = BOX_SIZE_LARGE;
+    private boolean mWithNoMsgTip;
     @DrawableRes
     private int mDrawablRes = R.drawable.smart_show_loading_img;
     @LayoutRes
@@ -21,6 +26,7 @@ class LoadingDialogCreator extends NormalDialogCreator<ILoadingDialogCreator> im
     public LoadingDialogCreator() {
         mCancelableOnTouchOutside = false;
         mDarkAroundWhenShow = false;
+        mWindowBackground = 0;
     }
 
     @Override
@@ -31,25 +37,33 @@ class LoadingDialogCreator extends NormalDialogCreator<ILoadingDialogCreator> im
 
     @Override
     public ILoadingDialogCreator message(CharSequence msg) {
-        mMsg = Utils.isEmpty(msg) ? "加载中..." : msg;
+        mMsg = Utils.isEmpty(msg) ? "加载中" : msg;
+        return this;
+    }
+
+    @Override
+    public ILoadingDialogCreator withNoMsgTip() {
+        mWithNoMsgTip = true;
         return this;
     }
 
     @Override
     public ILoadingDialogCreator large() {
-        mLayoutRes = R.layout.smart_show_loading_large;
+        mBoxSize = BOX_SIZE_LARGE;
         return this;
     }
 
 
     @Override
     public ILoadingDialogCreator middle() {
-        mLayoutRes = R.layout.smart_show_loading_middle;
+        mBoxSize = BOX_SIZE_MIDDLE;
         return this;
     }
 
     @Override
     public ILoadingDialogCreator small() {
+        mBoxSize = BOX_SIZE_SMALL;
+        withNoMsgTip();
         mLayoutRes = R.layout.smart_show_loading_small;
         return this;
     }
@@ -57,6 +71,14 @@ class LoadingDialogCreator extends NormalDialogCreator<ILoadingDialogCreator> im
     @Override
     protected void initView(Dialog dialog, View dialogRootView) {
         super.initView(dialog, dialogRootView);
+        switch (mBoxSize) {
+            case BOX_SIZE_LARGE:
+                mLayoutRes = mWithNoMsgTip ? R.layout.smart_show_loading_large_no_tip : R.layout.smart_show_loading_large;
+                break;
+            case BOX_SIZE_MIDDLE:
+                mLayoutRes = mWithNoMsgTip ? R.layout.smart_show_loading_middle_no_tip : R.layout.smart_show_loading_middle;
+                break;
+        }
         Utils.inflate(mLayoutRes, (ViewGroup) dialogRootView, true);
         TextView msgView = dialogRootView.findViewById(R.id.smart_show_loading_message_view);
         if (msgView != null) {
